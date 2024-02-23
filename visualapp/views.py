@@ -15,6 +15,29 @@ from django.http import HttpResponse
 from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def upload_video(request):
+    if request.method == 'POST' and request.FILES.get('videoFile'):
+        video_file = request.FILES['videoFile']
+
+        # Specify the destination file path
+        destination_path = 'visualapp/static/movie.mp4'
+
+        # Open the destination file in binary write mode and write chunks to it
+        try:
+            with open(destination_path, 'wb') as destination:
+                for chunk in video_file.chunks():
+                    destination.write(chunk)
+
+            return JsonResponse({'message': 'File uploaded successfully!'})
+
+        except Exception as e:
+            return JsonResponse({'error': f'Error uploading file: {str(e)}'})
+
+    return JsonResponse({'error': 'Invalid request'})
 
 
 def index(request):
@@ -25,10 +48,10 @@ def index(request):
     
 def convert_to_mp3(request):
     # Load the mp4 file
-    video = VideoFileClip("visualapp/static/panda.mp4")
+    video = VideoFileClip("visualapp/static/movie.mp4")
 
     # Extract audio from video
-    video.audio.write_audiofile("visualapp/static/finallynoo.wav")
+    video.audio.write_audiofile("visualapp/static/movie.wav")
 
     return redirect('index')
 
@@ -38,7 +61,7 @@ def execute_script(request):
     model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-base.en")
 
     # Load audio file
-    audio_file = os.path.join(settings.BASE_DIR, 'visualapp', 'static', 'audio.wav')
+    audio_file = os.path.join(settings.BASE_DIR, 'visualapp', 'static', 'movie.wav')
 
     # Check if the audio file exists
     if not os.path.exists(audio_file):
