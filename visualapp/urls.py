@@ -15,9 +15,3 @@ urlpatterns = [
     path('execute/', execute_script, name='script_output'),
 
 ]
-
-
-
-
-
-

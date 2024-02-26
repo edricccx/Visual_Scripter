@@ -85,13 +85,24 @@ def execute_script(request):
             transcripts.append(transcript)
 
         # Construct response with formatted transcripts and timing
+        transcripts = []
         formatted_transcripts = []
-        for i, (time, transcript_list) in enumerate(zip(times, transcripts)):
-            for sentence in transcript_list[0].split('.'):
-                sentence = sentence.strip()
-                if sentence:
-                    formatted_transcripts.append(f"{time}s: {sentence}")
+        for chunk in chunks:
+            input_features = processor(chunk, sampling_rate=16000, return_tensors="pt").input_features   
+            predicted_ids = model.generate(input_features)
+            transcript = processor.batch_decode(predicted_ids)
+            transcripts.append(transcript)
+
+        # Construct response with formatted transcripts and timing
+        for i, transcript in enumerate(transcripts):
+            split_transcript = transcript[0].split("<|startoftranscript|><|notimestamps|>")
+            split_transcript2 = split_transcript[1].split("<|endoftext|>")
+            cleaned_transcript = split_transcript[0]  # "|startoftranscript|>"
+
+            content = split_transcript2[0] if len(split_transcript) > 1 else ""  # Extract content, or empty string if not present
+            print(f"{times[i]}s: {content} ")
+            formatted_transcripts.append(f"{times[i]}s: {content} ")
 
         return render(request, 'visualapp/index.html', {'transcripts': formatted_transcripts})
     except Exception as e:
-        return HttpResponse(f"Error: {str(e)}", status=500)
+        return HttpResponse(f"Error: {str(e)}",status=500)
