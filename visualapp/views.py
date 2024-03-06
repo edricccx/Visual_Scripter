@@ -15,29 +15,7 @@ from django.http import HttpResponse
 from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponse
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-
-@csrf_exempt
-def upload_video(request):
-    if request.method == 'POST' and request.FILES.get('videoFile'):
-        video_file = request.FILES['videoFile']
-
-        # Specify the destination file path
-        destination_path = 'visualapp/static/movie.mp4'
-
-        # Open the destination file in binary write mode and write chunks to it
-        try:
-            with open(destination_path, 'wb') as destination:
-                for chunk in video_file.chunks():
-                    destination.write(chunk)
-
-            return JsonResponse({'message': 'File uploaded successfully!'})
-
-        except Exception as e:
-            return JsonResponse({'error': f'Error uploading file: {str(e)}'})
-
-    return JsonResponse({'error': 'Invalid request'})
+import subprocess
 
 
 def index(request):
@@ -51,7 +29,7 @@ def convert_to_mp3(request):
     video = VideoFileClip("visualapp/static/movie.mp4")
 
     # Extract audio from video
-    video.audio.write_audiofile("visualapp/static/movie.wav")
+    video.audio.write_audiofile("eventapp/static/movie.wav")
 
     return redirect('index')
 
@@ -103,6 +81,46 @@ def execute_script(request):
             print(f"{times[i]}s: {content} ")
             formatted_transcripts.append(f"{times[i]}s: {content} ")
 
-        return render(request, 'visualapp/index.html', {'transcripts': formatted_transcripts})
+        return render(request, 'eventapp/index.html', {'transcripts': formatted_transcripts})
     except Exception as e:
-        return HttpResponse(f"Error: {str(e)}",status=500)
+        return HttpResponse(f"Error: {str(e)}", status=500)
+def generate_preview(request):
+    script_path = "visualapp/static/preview.py"
+    output_path = "eventapp/static/movie.mp4"
+
+    # Open a subprocess and capture its output in real-time
+    process = subprocess.Popen(['python', script_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+
+    # Print the output in real-time
+    while True:
+        output = process.stdout.readline()
+        if output == '' and process.poll() is not None:
+            break
+        if output:
+            print(output.strip())
+
+    # Wait for the process to complete
+    process.wait()
+
+    # Check the process return code
+    if process.returncode == 0:
+        # Load the generated preview file
+        with open(output_path, 'rb') as f:
+            preview = f.read()
+
+        # Delete the preview file after loading
+        os.remove(output_path)
+
+        return HttpResponse(preview, content_type='video/mp4')
+    else:
+        return HttpResponse("Preview generation failed", status=500)
+from .utils import translate_text
+
+def translate(request):
+    if request.method == "POST":
+        input_text = request.POST.get("input-text")
+        target_lang = request.POST.get("target-language")
+        translated_text = translate_text(input_text, target_lang)  # Corrected function name
+        return HttpResponse(translated_text)
+    return render(request, "visualapp/translate.html")
+

@@ -38,7 +38,35 @@
         <p>{{ transcript }}</p>
         {% endfor %}
     </div>
+    <button id="generatePreviewButton">Generate Preview</button>
 
+    <!-- Optional: Display the generated preview -->
+    <video id="previewVideo" controls style="display: none;"></video>
+
+    <script>
+        document.getElementById("generatePreviewButton").addEventListener("click", function () {
+            fetch('/generate_preview')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Preview generation failed');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    // Create object URL for the blob
+                    const blobUrl = URL.createObjectURL(blob);
+
+                    // Display the generated preview
+                    const previewVideo = document.getElementById("previewVideo");
+                    previewVideo.src = blobUrl;
+                    previewVideo.style.display = "block";
+                })
+                .catch(error => {
+                    console.error('Error:', error.message);
+                });
+        });
+    </script>
+    <a href="{% url 'translate' %}"><button>Go to Translate Page</button></a>
 </body>
 
 </html>

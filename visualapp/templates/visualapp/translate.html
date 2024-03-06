@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translate Text</title>
+</head>
+
+<body>
+    <h1>Translate Text</h1>
+    <form method="post" id="translate-form">
+        {% csrf_token %}
+        <label for="input-text">Enter Text (English):</label><br>
+        <textarea name="input-text" id="input-text" rows="4" cols="50"></textarea><br><br>
+        <label for="target-language">Select Target Language:</label><br>
+        <select name="target-language" id="target-language">
+            <option value="fr_XX">French (fr_XX)</option>
+            <option value="ja_XX">Japanese (ja_XX)</option>
+            <option value="it_IT">Italian (it_IT)</option>
+            <option value="ml_IN">Malayalam (ml_IN)</option>
+            <option value="hi_IN">Hindi (hi_IN)</option>
+        </select><br><br>
+        <button type="submit">Translate</button>
+    </form><br>
+    <label for="translated-text">Translated Text:</label><br>
+    <textarea name="translated-text" id="translated-text" rows="4" cols="50" readonly></textarea>
+
+    <script>
+        document.getElementById("translate-form").addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const response = await fetch(window.location.href, {
+                method: "POST",
+                body: formData
+            });
+            const data = await response.text();
+            document.getElementById("translated-text").value = data;
+        });
+    </script>
+</body>
+
+</html>
