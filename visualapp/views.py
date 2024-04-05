@@ -9,7 +9,7 @@ from moviepy.editor import VideoFileClip
 from moviepy.editor import *
 import librosa
 import torch
-from transformers import WhisperProcessor, WhisperForConditionalGeneration 
+from transformers import WhisperProcessor, WhisperForConditionalGeneration
 import os
 from django.http import HttpResponse
 from django.conf import settings
@@ -22,14 +22,12 @@ def index(request):
     return render(request, 'visualapp/index.html')
 
 
-    # Serve the audio file for download
-    
 def convert_to_mp3(request):
     # Load the mp4 file
     video = VideoFileClip("visualapp/static/movie.mp4")
 
     # Extract audio from video
-    video.audio.write_audiofile("eventapp/static/movie.wav")
+    video.audio.write_audiofile("visualapp/static/movie.wav")
 
     return redirect('index')
 
@@ -47,46 +45,95 @@ def execute_script(request):
 
     try:
         # Load audio waveform and rate
-        waveform, rate = librosa.load(audio_file, sr=16000) 
+        waveform, rate = librosa.load(audio_file, sr=16000)
 
         # Split audio into 5s chunks
-        chunk_length = 5 * rate  
+        chunk_length = 5 * rate
         chunks = [waveform[i:i+chunk_length] for i in range(0, len(waveform), chunk_length)]
         times = [i*5 for i in range(len(chunks))]
 
         # Transcribe each chunk
         transcripts = []
         for chunk in chunks:
-            input_features = processor(chunk, sampling_rate=16000, return_tensors="pt").input_features   
+            input_features = processor(chunk, sampling_rate=16000, return_tensors="pt").input_features
             predicted_ids = model.generate(input_features)
             transcript = processor.batch_decode(predicted_ids)
             transcripts.append(transcript)
 
         # Construct response with formatted transcripts and timing
-        transcripts = []
         formatted_transcripts = []
-        for chunk in chunks:
-            input_features = processor(chunk, sampling_rate=16000, return_tensors="pt").input_features   
-            predicted_ids = model.generate(input_features)
-            transcript = processor.batch_decode(predicted_ids)
-            transcripts.append(transcript)
-
-        # Construct response with formatted transcripts and timing
         for i, transcript in enumerate(transcripts):
             split_transcript = transcript[0].split("<|startoftranscript|><|notimestamps|>")
             split_transcript2 = split_transcript[1].split("<|endoftext|>")
             cleaned_transcript = split_transcript[0]  # "|startoftranscript|>"
 
             content = split_transcript2[0] if len(split_transcript) > 1 else ""  # Extract content, or empty string if not present
-            print(f"{times[i]}s: {content} ")
-            formatted_transcripts.append(f"{times[i]}s: {content} ")
+            print(f"{times[i]}s: {content}")
+            formatted_transcripts.append(f"{times[i]}s: {content}")
 
-        return render(request, 'eventapp/index.html', {'transcripts': formatted_transcripts})
+        return render(request, 'visualapp/index.html', {'transcripts': formatted_transcripts})
     except Exception as e:
         return HttpResponse(f"Error: {str(e)}", status=500)
+
+def generate_srt(request):
+    # Load model
+    processor = WhisperProcessor.from_pretrained("openai/whisper-base.en")
+    model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-base.en")
+
+    # Load audio file
+    audio_file = os.path.join(settings.BASE_DIR, 'visualapp', 'static', 'movie.wav')
+
+    # Check if the audio file exists
+    if not os.path.exists(audio_file):
+        return HttpResponse("Audio file not found", status=404)
+
+    try:
+        # Load audio waveform and rate
+        waveform, rate = librosa.load(audio_file, sr=16000)
+
+        # Split audio into 5s chunks
+        chunk_length = 5 * rate
+        chunks = [waveform[i:i+chunk_length] for i in range(0, len(waveform), chunk_length)]
+        times = [i*5 for i in range(len(chunks))]
+
+        # Transcribe each chunk
+        transcripts = []
+        for chunk in chunks:
+            input_features = processor(chunk, sampling_rate=16000, return_tensors="pt").input_features
+            predicted_ids = model.generate(input_features)
+            transcript = processor.batch_decode(predicted_ids)
+            transcripts.append(transcript)
+
+        # Generate SRT content
+        srt_content = ""
+        counter = 1
+        for i, transcript in enumerate(transcripts):
+            split_transcript = transcript[0].split("<|startoftranscript|><|notimestamps|>")
+            split_transcript2 = split_transcript[1].split("<|endoftranscript|>")
+            cleaned_transcript = split_transcript[0]  # "|startoftranscript|>"
+            content = split_transcript2[0] if len(split_transcript) > 1 else ""  # Extract content, or empty string if not present
+            start_time = times[i]
+            end_time = times[i] + 5  # Assuming 5-second chunks
+
+            srt_content += f"{counter}\n{format_time(start_time)} --> {format_time(end_time)}\n{content}\n\n"
+            counter += 1
+
+        # Create a file response for download
+        response = HttpResponse(srt_content, content_type='text/srt')
+        response['Content-Disposition'] = 'attachment; filename="transcript.srt"'
+        return response
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=500)
+
+def format_time(seconds):
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    seconds = int(seconds % 60)
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d},000"
+
 def generate_preview(request):
     script_path = "visualapp/static/preview.py"
-    output_path = "eventapp/static/movie.mp4"
+    output_path = "visualapp/static/movie.mp4"
 
     # Open a subprocess and capture its output in real-time
     process = subprocess.Popen(['python', script_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -114,6 +161,7 @@ def generate_preview(request):
         return HttpResponse(preview, content_type='video/mp4')
     else:
         return HttpResponse("Preview generation failed", status=500)
+
 from .utils import translate_text
 
 def translate(request):
@@ -123,4 +171,3 @@ def translate(request):
         translated_text = translate_text(input_text, target_lang)  # Corrected function name
         return HttpResponse(translated_text)
     return render(request, "visualapp/translate.html")
-

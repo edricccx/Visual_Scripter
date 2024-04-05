@@ -1,93 +1,72 @@
-import cv2
 import os
-import numpy as np
-from transformers import pipeline
+from django.conf import settings
 from moviepy.editor import VideoFileClip, concatenate_videoclips
-from sentence_transformers import SentenceTransformer, util
-captioner = pipeline("image-to-text", model="Salesforce/blip-image-captioning-base")
-# Function to caption frames from the video
-def caption_frames(video_path, interval=10):
-    # Open the video file
-    cap = cv2.VideoCapture(video_path)
+from langchain import LLMChain, PromptTemplate
+from langchain.llms import OllaMa
+from django.http import HttpResponse
+
+def load_srt_file(srt_file_path):
+    with open(srt_file_path, 'r', encoding='utf-8') as f:
+        srt_content = f.read()
 
     captions = []
+    for entry in srt_content.split('\n\n'):
+        lines = entry.strip().split('\n')
+        if lines:
+            start_time, end_time = lines[1].split(' --> ')
+            caption = ' '.join(lines[2:])
+            captions.append((start_time, end_time, caption))
 
-    frame_number = 0
-    while True:
-        # Read the next frame
-        ret, frame = cap.read()
-        if not ret:
-            break
-
-        # Caption the frame using the image captioning pipeline (replace this with your captioning logic)
-        frame_filename = f"frame_{frame_number}.png"
-        cv2.imwrite(frame_filename, frame)
-        caption = f"{captioner(frame_filename)[0]['generated_text']} {frame_number}"
-        #caption = f"This is a caption for frame {frame_number}"  # Placeholder caption
-        captions.append(caption)
-
-        # Increment the frame number
-        frame_number += 1
-
-        # Skip frames to achieve the desired interval
-        cap.set(cv2.CAP_PROP_POS_MSEC, frame_number * interval * 1000)
-
-    # Release the video capture object
-    cap.release()
-    for i in range(frame_number):
-        frame_filename = f"frame_{i}.png"
-        if os.path.exists(frame_filename):
-            os.remove(frame_filename)
     return captions
 
-if __name__ == "__main__":
-    video_path = "visualapp/static/movie.mp4"
-    interval = 2  # Interval in seconds
+def generate_preview(request):
+    srt_file_path = os.path.join(settings.STATIC_ROOT, 'transcript.srt')
+    video_path = os.path.join(settings.STATIC_ROOT, 'movie.mp4')
 
-    # Generate captions for frames in the video
-    frame_captions = caption_frames(video_path, interval)
+    # Load the SRT file
+    captions = load_srt_file(srt_file_path)
 
-    # List of sentences to compare to the reference sentence
-    reference_sentence = "a skilled assassin is forced out of retirement when he becomes the target of a powerful criminal organization. He embarks on a mission to eliminate his enemies and uncover the truth behind their conspiracy. The film features intense action sequences, high-stakes showdowns, and a relentless pursuit of justice"
-    sentences_to_compare = frame_captions
+    # Load the OllaMa model
+    llm = OllaMa()
 
-    # Load the Sentence Transformer model
-    model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-mpnet-base-v2')
+    # Define the prompt template
+    prompt_template = PromptTemplate(
+        input_variables=["input_text"],
+        template="Summarize the following text: {input_text}",
+    )
 
-    # Encode the reference sentence and the list of sentences to compare
-    reference_embedding = model.encode([reference_sentence])
-    compare_embeddings = model.encode(sentences_to_compare)
+    # Create the LLMChain
+    llm_chain = LLMChain(llm=llm, prompt=prompt_template)
 
-    # Calculate cosine similarities
-    similarities = util.pytorch_cos_sim(reference_embedding, compare_embeddings)
+    # Generate summaries for the captions
+    summaries = []
+    for _, _, caption in captions:
+        summary = llm_chain.run(caption)
+        summaries.append(summary)
 
-    # Create a list of tuples with (sentence, similarity_score)
-    results = [(sentences_to_compare[i], similarities[0][i]) for i in range(len(sentences_to_compare))]
+    # Extract top 10 captions based on summary lengths
+    top_10_captions = sorted([(summary, i) for i, summary in enumerate(summaries)], key=lambda x: len(x[0]), reverse=True)[:10]
+    top_10_indices = [caption[1] for caption in top_10_captions]
 
-    # Sort the results by similarity score in descending order
-    results.sort(key=lambda x: x[1], reverse=True)
-
-    # Print the top 10 similarity scores and their corresponding sentences
-    print("Top 10 Similarity Scores:")
-    for i, (sentence, similarity) in enumerate(results[:10]):
-        print(f"{i + 1}. Sentence: {sentence}, Similarity Score: {similarity:.4f}")
-
-    # Extract top 10 frame numbers
-    top_10_frames = [result[0].split()[-1] for result in results[:10]]
-
-    # Prepare 1-second clips for each frame
+    # Prepare clips for the top 10 captions
     clips = []
-    for frame_number in top_10_frames:
-        start_time = max(int(frame_number) - 1, 0)  # Start 1 second before the frame
-        end_time = min(int(frame_number) + 1, len(frame_captions) - 1)  # End 1 second after the frame
-        clip = VideoFileClip(video_path).subclip(start_time, end_time)
+    video = VideoFileClip(video_path)
+    for index in top_10_indices:
+        start_time, end_time, _ = captions[index]
+        start_time = sum(map(float, start_time.split(':')))
+        end_time = sum(map(float, end_time.split(':')))
+        clip = video.subclip(start_time, end_time)
         clips.append(clip)
 
     # Concatenate all clips
     final_clip = concatenate_videoclips(clips)
 
     # Write the final clip to an MP4 file
-    final_clip.write_videofile("visualapp/static/preview.mp4", codec='libx264')
+    preview_file_path = os.path.join(settings.STATIC_ROOT, 'preview.mp4')
+    final_clip.write_videofile(preview_file_path, codec='libx264')
 
     # Close the clips
     final_clip.close()
+    video.close()
+
+    return HttpResponse('Preview generated successfully')

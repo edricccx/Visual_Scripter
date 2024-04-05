@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Video to Audio Convertersss</title>
 </head>
-
 <body>
     <h1>Video to Audio Converter</h1>
     <br />
@@ -24,8 +22,7 @@
         Your browser does not support the video tag.
     </video>
     <a id="downloadLink" style="display: none;"></a>
-    <!-- Include your JavaScript file -->
-    <script src="{% static 'script.js' %}"></script>
+
     <h1>Transcript Generation</h1>
     <form action="{% url 'execute_script' %}" method="post">
         {% csrf_token %}
@@ -38,7 +35,8 @@
         <p>{{ transcript }}</p>
         {% endfor %}
     </div>
-    <button id="generatePreviewButton">Generate Preview</button>
+
+    <button id="download-srt">Download SRT</button>
 
     <!-- Optional: Display the generated preview -->
     <video id="previewVideo" controls style="display: none;"></video>
@@ -55,7 +53,6 @@
                 .then(blob => {
                     // Create object URL for the blob
                     const blobUrl = URL.createObjectURL(blob);
-
                     // Display the generated preview
                     const previewVideo = document.getElementById("previewVideo");
                     previewVideo.src = blobUrl;
@@ -66,7 +63,11 @@
                 });
         });
     </script>
-    <a href="{% url 'translate' %}"><button>Go to Translate Page</button></a>
-</body>
 
+    <a href="{% url 'translate' %}"><button>Go to Translate Page</button></a>
+
+    <!-- Include JavaScript files -->
+    <script src="{% static 'script.js' %}"></script>
+    <script src="{% static 'srt.js' %}"></script>
+</body>
 </html>
