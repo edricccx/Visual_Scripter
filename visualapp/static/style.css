@@ -1,8 +1,9 @@
 /* Style for the video player */
 #videoPlayer {
-    width: 100%;
-    max-width: 800px; /* Adjust the maximum width as needed */
-    margin: 20px auto; /* Center the video player horizontally with some margin */
+    width: 80%;
+    /* max-width: 800px; Adjust the maximum width as needed */
+    height: 90vh;
+    margin-left: 10%; /* Center the video player horizontally with some margin */
 }
 
 /* Style for the buttons */
@@ -16,6 +17,9 @@ button {
     cursor: pointer;
     margin: 10px; /* Add margin between buttons */
     transition: background-color 0.3s ease;
+}
+#executeScriptButton{
+    
 }
 
 button:hover {

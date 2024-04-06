@@ -88,3 +88,58 @@
 //         console.error('No file selected!');
 //     }
 // }
+document.addEventListener("DOMContentLoaded", function () {
+    var executeScriptButton = document.getElementById('executeScriptButton');
+    var outputTextField = document.getElementById('outputTextField');
+
+    executeScriptButton.addEventListener("click", function () {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'execute_script', true); // Specify the URL directly here
+        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken')); // Include CSRF token if required by Django
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    var startIndex = xhr.responseText.indexOf("<!-- Display transcripts -->");
+                    var endIndex = xhr.responseText.indexOf("</div>");
+
+                    // Extract the desired content
+                    var transcriptsContent = xhr.responseText.substring(startIndex, endIndex);
+
+                    // Modify the extracted content
+                    var modifiedTranscripts = transcriptsContent
+                        .replace(/<[^>]+>/g, '')   // Remove HTML tags
+                        .replace(/<p>\d+s: /g, '') // Remove "<p>s: " from each line
+                        .replace(/<\/p>/g, '')     // Remove "</p>" from each line
+                        .replace(/&#x27;/g, "")
+                        .trim();                   // Trim whitespace from both ends
+
+                    // Set the modified transcripts as the value of outputTextField
+                    outputTextField.value = modifiedTranscripts;
+                } else {
+                    // Handle error
+                    outputTextField.value = "Failed to execute script";
+                }
+            }
+        };
+
+        // Send the request
+        xhr.send();
+    });
+});
+
+// Function to get CSRF token from cookies
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}

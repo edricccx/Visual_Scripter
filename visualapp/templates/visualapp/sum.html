@@ -9,16 +9,9 @@
 </head>
 
 <body>
-<!-- <form id="videoForm" action="#" method="post" enctype="multipart/form-data">
-    <label for="videoFile">Choose a video file</label>
-    <br />
-    <input type="file" id="videoFile" name="videoFile" accept="video/*">
-    <button type="button" onclick="uploadVideo()">Upload</button>
-</form>
-<form action="{% url 'convert_to_mp3' %}" method="post">
-    {% csrf_token %}
-    <button type="submit">Convert to MP3</button>
-</form> -->
+
+<h1>Transcript Generation</h1>
+
 <video id="videoPlayer" controls>
     <source src="{% url 'play-video' %}" type="video/mp4">
     Your browser does not support the video tag.
@@ -26,18 +19,19 @@
   
   <a id="downloadLink" style="display: none;"></a>
   
-  <h1>Transcript Generation</h1>
-  
-  <form action="{% url 'execute_script' %}" method="post">
-    {% csrf_token %}
-    <button type="submit">Execute Script</button>
+  <form id="executeScriptForm" action="/execute_script/" method="post">
+      {% csrf_token %}
+      <button type="button" id="executeScriptButton">Transcribe!!</button>
+      <button id="srt">Download SRT</button>
   </form>
-  
+
+  <textarea id="outputTextField" rows="10" cols="50" readonly></textarea>
+
   <!-- Display transcripts -->
   <div>
-    {% for transcript in transcripts %}
-    <p>{{ transcript }}</p>
-    {% endfor %}
+      {% for transcript in transcripts %}
+      <p>{{ transcript }}</p>
+      {% endfor %}
   </div>
 
 <!-- Optional: Display the generated preview -->

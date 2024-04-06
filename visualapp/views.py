@@ -42,7 +42,7 @@ def play_video(request):
     else:
         return JsonResponse({'error': 'Video file not found'}, status=404)
 
-def convert_to_mp3(request):
+def convert_to_mp3():
     # Load the mp4 file
     video = VideoFileClip("visualapp/static/movie.mp4")
 
@@ -52,6 +52,8 @@ def convert_to_mp3(request):
     return redirect('index')
 
 def execute_script(request):
+    # Call convert_to_mp3 function
+    convert_to_mp3()
     # Load model
     processor = WhisperProcessor.from_pretrained("openai/whisper-base.en")
     model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-base.en")
@@ -65,36 +67,43 @@ def execute_script(request):
 
     try:
         # Load audio waveform and rate
-        waveform, rate = librosa.load(audio_file, sr=16000)
+        waveform, rate = librosa.load(audio_file, sr=16000) 
 
         # Split audio into 5s chunks
-        chunk_length = 5 * rate
+        chunk_length = 5 * rate  
         chunks = [waveform[i:i+chunk_length] for i in range(0, len(waveform), chunk_length)]
         times = [i*5 for i in range(len(chunks))]
 
         # Transcribe each chunk
         transcripts = []
         for chunk in chunks:
-            input_features = processor(chunk, sampling_rate=16000, return_tensors="pt").input_features
+            input_features = processor(chunk, sampling_rate=16000, return_tensors="pt").input_features   
             predicted_ids = model.generate(input_features)
             transcript = processor.batch_decode(predicted_ids)
             transcripts.append(transcript)
 
         # Construct response with formatted transcripts and timing
+        transcripts = []
         formatted_transcripts = []
+        for chunk in chunks:
+            input_features = processor(chunk, sampling_rate=16000, return_tensors="pt").input_features   
+            predicted_ids = model.generate(input_features)
+            transcript = processor.batch_decode(predicted_ids)
+            transcripts.append(transcript)
+
+        # Construct response with formatted transcripts and timing
         for i, transcript in enumerate(transcripts):
             split_transcript = transcript[0].split("<|startoftranscript|><|notimestamps|>")
             split_transcript2 = split_transcript[1].split("<|endoftext|>")
             cleaned_transcript = split_transcript[0]  # "|startoftranscript|>"
 
             content = split_transcript2[0] if len(split_transcript) > 1 else ""  # Extract content, or empty string if not present
-            print(f"{times[i]}s: {content}")
-            formatted_transcripts.append(f"{times[i]}s: {content}")
+            print(f"{times[i]}s: {content} ")
+            formatted_transcripts.append(f"{times[i]}s: {content} ")
 
-        return render(request, 'visualapp/index.html', {'transcripts': formatted_transcripts})
+        return render(request, 'visualapp/sum.html', {'transcripts': formatted_transcripts})
     except Exception as e:
         return HttpResponse(f"Error: {str(e)}", status=500)
-
 
 
 def index(request):
