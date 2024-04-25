@@ -18,9 +18,7 @@ button {
     margin: 10px; /* Add margin between buttons */
     transition: background-color 0.3s ease;
 }
-#executeScriptButton{
-    
-}
+
 
 button:hover {
     background-color: #2980b9; /* Darker color on hover */

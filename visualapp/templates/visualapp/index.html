@@ -1,44 +1,340 @@
 <!DOCTYPE html>
-{% load static %}
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <title>Video to Audio Convertersss</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Scripter</title>
+    <script src="https://kit.fontawesome.com/c73fbc7a21.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+        }
+
+        #text-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 85vh;
+        }
+
+        .heading {
+            margin-top: 20px;
+            margin-bottom: 10%;
+        }
+
+        h1 {
+            font-size: 5em;
+            color: black;
+            margin: 0;
+            padding: 0;
+        }
+
+        span {
+            border-right: .05em solid;
+            animation: caret 1s steps(1) infinite;
+        }
+
+        @keyframes caret {
+            50% {
+                border-color: transparent;
+            }
+        }
+
+        #container {
+
+            color: black;
+            font-size: 36px;
+            font-weight: bold;
+            margin-top: 0%;
+            display: block;
+        }
+
+        #flip {
+            height: 50px;
+            overflow: hidden;
+        }
+
+        #flip > div > div {
+            color: #fff;
+            padding: 4px 12px;
+            height: 45px;
+            margin-bottom: 45px;
+            display: inline-block;
+        }
+
+        #flip div:first-child {
+            animation: show 5s linear infinite;
+        }
+
+        #flip div div {
+            background: #69704b;
+        }
+
+        #flip div:first-child div {
+            background: #b0d89d;
+        }
+
+        #flip div:last-child div {
+            background: #c49886;
+        }
+
+        @keyframes show {
+            0% {
+                margin-top: -270px;
+            }
+            5% {
+                margin-top: -180px;
+            }
+            33% {
+                margin-top: -180px;
+            }
+            38% {
+                margin-top: -90px;
+            }
+            66% {
+                margin-top: -90px;
+            }
+            71% {
+                margin-top: 0px;
+            }
+            99.99% {
+                margin-top: 0px;
+            }
+            100% {
+                margin-top: -270px;
+            }
+        }
+
+        p {
+            position: fixed;
+            width: 100%;
+            bottom: 30px;
+            font-size: 12px;
+            color: #999;
+            margin-top: 200px;
+        }
+               
+        a {
+        text-decoration: none;
+        line-height: 40px;
+        color: black;
+        position: relative;
+        display: block;
+        overflow: hidden;
+        width: 20vh;
+        height: 40px;
+        text-align:center;
+        max-width: 250px;
+        border: 1px solid #71b084;
+        }
+
+        .btn-6 span {
+        position: absolute;
+        display: block;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background-color: #71b084;
+        transition: width 0.4s ease-in-out, height 0.4s ease-in-out;
+        -webkit-transform: translate(-50%, -50%);
+                transform: translate(-50%, -50%);
+        z-index: -1;
+        }
+        .btn-6:hover {
+        color: white;
+        }
+        .btn-6:hover span {
+        width: 225%;
+        height: 562.5px;
+        }
+        .btn-6:active {
+        background-color: #71b084;
+        }
+        .button-group{
+            margin-top: 2%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2%;
+        }
+
+        .file-upload__label {
+            display: block;
+            padding: 0.5em 2em;
+            color: #fff;
+            background: #444343;
+            border-radius: .4em;
+            transition: background .3s;
+  
+        &:hover {
+            cursor: pointer;
+            background: #000;
+        }
+}
+    
+.file-upload__input {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    font-size: 1;
+    width:0;
+    height: 100%;
+    opacity: 0;
+}
+
+</style>
 </head>
-
 <body>
-    <h1>Video to Audio Converter</h1>
-    <br />
-    <form id="videoForm" action="#" method="post" enctype="multipart/form-data">
-        <label for="videoFile">Choose a video file</label>
-        <br />
-        <input type="file" id="videoFile" name="videoFile" accept="video/*">
-        <button type="button" onclick="uploadVideo()">Upload</button>
-    </form>
-    <form action="{% url 'convert_to_mp3' %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Convert to MP3</button>
-    </form>
-    <video id="videoPlayer" width="640" height="360" controls>
-        Your browser does not support the video tag.
-    </video>
-    <a id="downloadLink" style="display: none;"></a>
-    <!-- Include your JavaScript file -->
-    <script src="{% static 'script.js' %}"></script>
-    <h1>Transcript Generation</h1>
-    <form action="{% url 'execute_script' %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Execute Script</button>
-    </form>
+    <div id="text-box">
+        <div id="container">
+            Hello 
+            <div id="flip">
+              <div><div>Annotators!</div></div>
+              <div><div>Creaters!</div></div>
+              <div><div>Editors!</div></div>
+            </div>
+        </div>
+        <div class="heading">
+            <h1>Visual Scripter</h1>
+        </div>
 
-    <!-- Display transcripts -->
-    <div>
-        {% for transcript in transcripts %}
-        <p>{{ transcript }}</p>
-        {% endfor %}
+        <div class="file-upload">
+            <label for="upload" class="file-upload__label">
+              Upload <i class="fa fa-upload" aria-hidden="true"></i>
+            </label>
+            <input id="upload" class="file-upload__input" type="file" name="file" onchange="uploadVideo()">
+            {% csrf_token %}
+          </div>
+        <div class="button-group">
+            <a class="btn-6" href="/prev">Preview Generation<span></span></a>
+            <a class="btn-6" href="/sum">Subtitle Generation<span></span></a>
+        </div>
     </div>
-
 </body>
+
+<script>
+    document.addEventListener('DOMContentLoaded',function(event){
+  // array with texts to type in typewriter
+  var dataText = [ "Visual Scripter"];
+  
+  // type one text in the typwriter
+  // keeps calling itself until the text is finished
+  function typeWriter(text, i, fnCallback) {
+    // chekc if text isn't finished yet
+    if (i < (text.length)) {
+      // add next character to h1
+     document.querySelector("h1").innerHTML = text.substring(0, i+1) +'<span aria-hidden="true"></span>';
+
+      // wait for a while and call this function again for next character
+      setTimeout(function() {
+        typeWriter(text, i + 1, fnCallback)
+      }, 100);
+    }
+    // text finished, call callback if there is a callback function
+    else if (typeof fnCallback == 'function') {
+      // call callback after timeout
+      setTimeout(fnCallback, 700);
+    }
+  }
+  // start a typewriter animation for a text in the dataText array
+   function StartTextAnimation(i) {
+     if (typeof dataText[i] == 'undefined'){
+        setTimeout(function() {
+          StartTextAnimation(0); 
+        }, 20000);
+     }
+     // check if dataText[i] exists
+    if (i < dataText[i].length) {
+      // text exists! start typewriter animation
+     typeWriter(dataText[i], 0, function(){
+       // after callback (and whole text has been animated), start next text
+       StartTextAnimation(i + 1);
+     });
+    }
+  }
+  // start the text animation
+  StartTextAnimation(0);
+});
+
+$(function() {  
+  $('.btn-6')
+    .on('mouseenter', function(e) {
+      
+			var parentOffset = getOffset(e.target),
+      		relX = e.pageX - parentOffset.left,
+      		relY = e.pageY - parentOffset.top;
+      e.target.querySelector('span').setAttribute('style', 'top:'+relY+'px;left:'+relX+'px;')
+    })
+    .on('mouseout', function(e) {
+			var parentOffset = getOffset(e.target),
+      		relX = e.pageX - parentOffset.left,
+      		relY = e.pageY - parentOffset.top;
+      e.target.querySelector('span').setAttribute('style', 'top:'+relX+'px;left:'+relY+'px;')
+    });
+  $('[href=#]').click(function(){return false});
+  
+  function handleOffsetX(e){
+    let offset;
+    console.log(getOffsetSum(e));
+    return offset
+  }
+  
+  function getOffset(elem) {
+    var top=0, left=0;
+    while(elem) {
+        top = top + parseInt(elem.offsetTop);
+        left = left + parseInt(elem.offsetLeft);
+        elem = elem.offsetParent;
+    }
+    return {top: top, left: left};
+}
+});
+
+function uploadVideo() {
+  // Get the file input element
+  const fileInput = document.getElementById('upload');
+
+  // Get the CSRF token from the DOM
+  const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+  // Check if a file has been selected
+  if (fileInput.files.length > 0) {
+    // Get the selected file
+    const file = fileInput.files[0];
+
+    // Create a new FormData object
+    const formData = new FormData();
+
+    // Append the file and the CSRF token to the FormData object
+    formData.append('file', file, 'movie.mp4');
+    formData.append('csrfmiddlewaretoken', csrfToken);
+
+    // Send the file to the server using AJAX
+    fetch('/save-video/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken
+      },
+      body: formData
+    })
+    .then(response => {
+      if (response.ok) {
+        console.log('Video uploaded successfully!');
+      } else {
+        console.error('Error uploading video.');
+      }
+    })
+    .catch(error => {
+      console.error('Error uploading video:', error);
+    });
+  }
+}
+</script>
 
 </html>
