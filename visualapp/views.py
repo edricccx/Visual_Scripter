@@ -18,6 +18,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import subprocess
+import json
 
 def upload_video(request):
     if request.method == 'POST' and request.FILES.get('file'):
@@ -172,35 +173,44 @@ def format_time(seconds):
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 def generate_preview(request):
-    script_path = "visualapp/static/preview.py"
-    output_path = "visualapp/static/movie.mp4"
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            reference_sentence = data.get('referenceSentence', '')
+        except json.JSONDecodeError:
+            return HttpResponse("Invalid request data", status=400)
 
-    # Open a subprocess and capture its output in real-time
-    process = subprocess.Popen(['python', script_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+        script_path = "visualapp/static/backupig.py"
+        output_path = "visualapp/static/preview.mp4"
 
-    # Print the output in real-time
-    while True:
-        output = process.stdout.readline()
-        if output == '' and process.poll() is not None:
-            break
-        if output:
-            print(output.strip())
+        # Open a subprocess and capture its output in real-time
+        process = subprocess.Popen(['python', script_path, reference_sentence], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
 
-    # Wait for the process to complete
-    process.wait()
+        # Print the output in real-time
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                print(output.strip())
 
-    # Check the process return code
-    if process.returncode == 0:
-        # Load the generated preview file
-        with open(output_path, 'rb') as f:
-            preview = f.read()
+        # Wait for the process to complete
+        process.wait()
 
-        # Delete the preview file after loading
-        os.remove(output_path)
+        # Check the process return code
+        if process.returncode == 0:
+            # Load the generated preview file
+            with open(output_path, 'rb') as f:
+                preview = f.read()
 
-        return HttpResponse(preview, content_type='video/mp4')
+            # Delete the preview file after loading
+            os.remove(output_path)
+
+            return HttpResponse(preview, content_type='video/mp4')
+        else:
+            return HttpResponse("Preview generation failed", status=500)
     else:
-        return HttpResponse("Preview generation failed", status=500)
+        return render(request, 'prev.html')
 
 from .utils import translate_text
 
