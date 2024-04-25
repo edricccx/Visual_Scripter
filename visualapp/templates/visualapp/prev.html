@@ -1,1 +1,140 @@
-Preview
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Preview</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: 'Arial', sans-serif;
+            background-color: #f1dec9; /* Light brown background */
+        }
+
+        #container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background: #ac7c5a; /* Lighter brown for the container */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 80%; /* Adjusted width for better responsiveness */
+            max-width: 1200px; /* Maximum width adjusted */
+            transition: transform 0.3s ease-in-out; /* Smooth transition for transform */
+            cursor: pointer; /* To indicate interactivity */
+        }
+
+        #container:hover {
+            transform: scale(1.05); /* Slight scale on hover */
+        }
+
+        textarea {
+            padding: 10px;
+            margin-top: 20px;
+            width: 100%; /* Full width of the container */
+            height: 150px; /* Increased height for more text */
+            border: 2px solid #865D36; /* Dark brown border */
+            border-radius: 4px;
+            box-sizing: border-box; /* Includes padding and border in the element's total width and height */
+            background-color: #c9b7aa; /* Greyish tan background for input */
+            color: #3E362E; /* Dark brown text color */
+            resize: none; /* Disable resizing */
+            overflow-y: auto; /* Enable vertical scroll */
+        }
+
+        button, a.button-link {
+            padding: 10px 20px;
+            background-color: #462404; /* Dark brown background */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            text-align: center;
+            text-decoration: none; /* Remove underline from links */
+            display: inline-block; /* Allow link to behave like a button */
+        }
+
+        button:hover, a.button-link:hover {
+            background-color: #3E362E; /* Darker brown on hover */
+        }
+
+        #previewVideo {
+            display: none;
+            width: 100%; /* Responsive width */
+            max-width: 800px; /* Increased maximum width */
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            font-family: "DM Serif Display", serif;
+            font-size: 64px; /* Increased font size */
+            color: #5f4327;
+            margin-bottom: 5%; /* Adjusted bottom margin */
+        }
+    </style>
+</head>
+<body>
+    <h1>Preview Generation</h1>
+    <div id="container">
+        <textarea id="referenceInput" placeholder="Enter reference sentence or paragraph"></textarea>
+        <button id="generatePreviewButton">Generate Preview</button>
+        <video id="previewVideo" controls></video>
+        <a id="downloadLink" class="button-link" download="preview.mp4" style="display: none;">Download Video</a>   
+    </div>
+
+    <script>
+        document.getElementById("generatePreviewButton").addEventListener("click", function () {
+            const referenceInput = document.getElementById("referenceInput");
+            const referenceSentence = referenceInput.value.trim();
+
+            if (!referenceSentence) {
+                alert("Please enter a reference sentence.");
+                return;
+            }
+
+            fetch('/generate_preview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({ referenceSentence }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Preview generation failed');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Create object URL for the blob
+                const blobUrl = URL.createObjectURL(blob);
+
+                // Display the generated preview
+                const previewVideo = document.getElementById("previewVideo");
+                previewVideo.src = blobUrl;
+                previewVideo.style.display = "block";
+
+                // Optionally hide the text input and button after generation
+                // referenceInput.style.display = "none";
+                // document.getElementById("generatePreviewButton").style.display = "none";
+
+                // Show the download link
+                const downloadLink = document.getElementById("downloadLink");
+                downloadLink.href = blobUrl;
+                downloadLink.style.display = "inline-block";
+            })
+            .catch(error => {
+                console.error('Error:', error.message);
+            });
+        });
+    </script>
+</body>
+</html>
+ 
