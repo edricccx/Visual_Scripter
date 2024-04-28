@@ -1,9 +1,10 @@
-import cv2
+import sys
 import os
-from transformers import pipeline
+import site
+import cv2
+from transformers.pipelines import pipeline
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from sentence_transformers import SentenceTransformer, util
-import sys
 
 captioner = pipeline("image-to-text", model="Salesforce/blip-image-captioning-base")
 
