@@ -218,6 +218,5 @@ def translate(request):
     if request.method == "POST":
         input_text = request.POST.get("input-text")
         target_lang = request.POST.get("target-language")
-        translated_text = translate_text(input_text, target_lang)  # Corrected function name
+        translated_text = translate_text(input_text, target_lang)
         return HttpResponse(translated_text)
-    return render(request, "visualapp/translate.html")
