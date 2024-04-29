@@ -5,37 +5,54 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{% static 'style.css' %}">
-    <title>Visual Scripter</title>
+    <title>Visual Scripter??</title>
 </head>
 
 <body>
 
-<h1>Transcript Generation</h1>
+    <h1>Transcript Generation</h1>
 
-<video id="videoPlayer" controls>
-    <source src="{% url 'play-video' %}" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-  
-  <a id="downloadLink" style="display: none;"></a>
-  
-  <form id="executeScriptForm" action="/execute_script/" method="post">
-      {% csrf_token %}
-      <button type="button" id="executeScriptButton">Transcribe!!</button>
-      <button id="srt">Download SRT</button>
-  </form>
+    <video id="videoPlayer" controls>
+        <source src="{% url 'play-video' %}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
 
-  <textarea id="outputTextField" rows="10" cols="50" readonly></textarea>
+    <p2 class="card2" id="subtitleDisplay"></p2>
 
-  <!-- Display transcripts -->
-  <div>
-      {% for transcript in transcripts %}
-      <p>{{ transcript }}</p>
-      {% endfor %}
-  </div>
 
-<!-- Optional: Display the generated preview -->
-<!-- <video id="previewVideo" controls style="display: none;"></video>
+
+    <a id="downloadLink" style="display: none;"></a>
+
+    <form id="executeScriptForm" action="/execute_script/" method="post">
+        {% csrf_token %}
+        <button type="button" id="executeScriptButton">Transcribe!!</button>
+        <button id="srt">Download SRT</button>
+    </form>
+
+    <textarea id="outputTextField" rows="10" cols="50" readonly></textarea>
+    <select name="target-language" id="target-language">
+        <option value="fr_XX">French (fr_XX)</option>
+        <option value="ja_XX">Japanese (ja_XX)</option>
+        <option value="it_IT">Italian (it_IT)</option>
+        <option value="ml_IN">Malayalam (ml_IN)</option>
+        <option value="hi_IN">Hindi (hi_IN)</option>
+    </select>
+    <button id="translateButton">Translate</button>
+    <textarea id="translatedTextField" rows="10" cols="50"></textarea>
+
+    <!-- Display transcripts -->
+    <div>
+        {% for transcript in transcripts %}
+        <p>{{ transcript }}</p>
+        {% endfor %}
+    </div>
+    <button id="subtitlePreviewButton">Subtitle Preview</button>
+
+    <div id="subtitleDisplay"></div>
+
+
+    <!-- Optional: Display the generated preview -->
+    <!-- <video id="previewVideo" controls style="display: none;"></video>
 
 <script>
     document.getElementById("generatePreviewButton").addEventListener("click", function () {
@@ -60,11 +77,12 @@
     });
 </script> -->
 
-<!-- <a href="{% url 'translate' %}"><button>Go to Translate Page</button></a> -->
+    <!-- <a href="{% url 'translate' %}"><button>Go to Translate Page</button></a> -->
 
-<!-- Include JavaScript files -->
+    <!-- Include JavaScript files -->
+    <script src="{% static 'script.js' %}"></script>
+    <script src="{% static 'srt.js' %}"></script>
 </body>
-<script src="{% static 'script.js' %}"></script>
-<script src="{% static 'srt.js' %}"></script>
+
 
 </html>
