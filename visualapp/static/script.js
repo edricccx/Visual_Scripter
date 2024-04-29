@@ -1,93 +1,3 @@
-// /// function uploadVideo() {
-// //     var form = document.getElementById('videoForm');
-// //     var input = document.getElementById('videoFile');
-// //     var video = document.getElementById('videoPlayer');
-
-// //     var file = input.files[0];
-// //     var objectURL = URL.createObjectURL(file);
-
-// //     video.src = objectURL;
-
-// //     // Hide the form after uploading
-
-// // }
-
-// // function uploadVideo() {
-// //     var form = document.getElementById('videoForm');
-// //     var input = document.getElementById('videoFile');
-// //     var video = document.getElementById('videoPlayer');
-
-// //     var file = input.files[0];
-
-// //     // Check if a file is selected
-// //     if (file) {
-// //         // Create a FormData object and append the file to it
-// //         var formData = new FormData();
-// //         formData.append('videoFile', file);
-
-// //         // Send an AJAX request to Django view to handle file upload
-// //         var xhr = new XMLHttpRequest();
-// //         xhr.open('POST', '/upload_video/', true);
-
-// //         // Define the callback function when the upload is successful
-// //         xhr.onload = function () {
-// //             if (xhr.status === 200) {
-// //                 // Parse the response if needed
-// //                 var response = JSON.parse(xhr.responseText);
-// //                 // Handle the response or perform additional actions
-// //                 console.log(response);
-// //             } else {
-// //                 // Handle error cases
-// //                 console.error('File upload failed!');
-// //             }
-// //         };
-
-// //         // Send the FormData with the file
-// //         xhr.send(formData);
-// //     } else {
-// //         console.error('No file selected!');
-// //     }
-// // }
-// function uploadVideo() {
-//     var form = document.getElementById('videoForm');
-//     var input = document.getElementById('videoFile');
-//     var video = document.getElementById('videoPlayer');
-
-//     var file = input.files[0];
-
-//     // Check if a file is selected
-//     if (file) {
-//         // Create a FormData object and append the file to it
-//         var formData = new FormData();
-//         formData.append('videoFile', file);
-
-//         // Send an AJAX request to Django view to handle file upload
-//         var xhr = new XMLHttpRequest();
-//         xhr.open('POST', '/upload_video/', true);
-
-//         // Define the callback function when the upload is successful
-//         xhr.onload = function () {
-//             if (xhr.status === 200) {
-//                 // Parse the response
-//                 var response = JSON.parse(xhr.responseText);
-
-//                 // Update video source based on the server response
-//                 video.src = response.file_path;
-
-//                 // Handle the response or perform additional actions
-//                 console.log(response);
-//             } else {
-//                 // Handle error cases
-//                 console.error('File upload failed!');
-//             }
-//         };
-
-//         // Send the FormData with the file
-//         xhr.send(formData);
-//     } else {
-//         console.error('No file selected!');
-//     }
-// }
 document.addEventListener("DOMContentLoaded", function () {
     var executeScriptButton = document.getElementById('executeScriptButton');
     var outputTextField = document.getElementById('outputTextField');
@@ -129,6 +39,35 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Function to get CSRF token from cookies
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    var outputTextField = document.getElementById('outputTextField');
+    var translateButton = document.getElementById('translateButton');
+
+    translateButton.addEventListener("click", function () {
+        var inputText = outputTextField.value;
+        var targetLanguage = document.getElementById('target-language').value;
+        console.log("translation process online");
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/translate/', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                var translatedText = xhr.responseText;
+                var formattedTranslation = translatedText.replace(/(\d+s:)/g, '\n$1');
+                document.getElementById('translatedTextField').value = formattedTranslation;
+
+            } else {
+                document.getElementById('translatedTextField').value = 'Translation failed';
+            }
+        };
+
+        xhr.send('input-text=' + encodeURIComponent(inputText) + '&target-language=' + encodeURIComponent(targetLanguage));
+
+    });
+});
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -143,3 +82,57 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    var videoPlayer = document.getElementById('videoPlayer');
+    var subtitleDisplay = document.getElementById('subtitleDisplay');
+    var subtitlePreviewButton = document.getElementById('subtitlePreviewButton');
+    var subtitles = []; // Array to store subtitles with timestamps
+
+    // Event listener for subtitle preview button click
+    subtitlePreviewButton.addEventListener("click", function () {
+        // Reset video playback to start from the beginning
+        videoPlayer.currentTime = 0;
+        videoPlayer.play();
+
+        // Get the translated text from the textarea
+        var translatedText = document.getElementById('translatedTextField').value;
+
+        // Split the translated text into lines
+        var lines = translatedText.split('\n');
+
+        // Format the lines into a single line with commas
+        var formattedTranslatedText = lines.join(', ');
+
+        // Split the formatted text into subtitles
+        subtitles = formattedTranslatedText.split(', ');
+
+        // Display subtitles
+        displaySubtitles();
+    });
+
+    // Function to display subtitles
+    function displaySubtitles() {
+        subtitleDisplay.innerHTML = ''; // Clear previous subtitles
+
+        subtitles.forEach(function (subtitle, index) {
+            setTimeout(function () {
+                subtitleDisplay.textContent = subtitle;
+            }, index * 5000); // Display each subtitle for 5 seconds
+        });
+    }
+});
