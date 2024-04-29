@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YouTube Summary</title>
+</head>
+<body>
+    <h1>YouTube Summary</h1>
+    <form method="post" action="{% url 'youtube_transcripter' %}">
+        {% csrf_token %}
+        <label for="youtube_link">YouTube Link:</label>
+        <input type="text" id="youtube_link" name="youtube_link">
+        <button type="submit">Get Summary</button>
+    </form>
+    {% if summary %}
+        <h2>Summary:</h2>
+        <p>{{ summary }}</p>
+    {% elif error %}
+        <p>{{ error }}</p>
+    {% endif %}
+</body>
+</html>
