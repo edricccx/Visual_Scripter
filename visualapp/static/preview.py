@@ -1,10 +1,10 @@
-import sys
-import os
-import site
 import cv2
-from transformers.pipelines import pipeline
+import os
+import numpy as np
+from transformers import pipeline
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from sentence_transformers import SentenceTransformer, util
+import sys
 
 captioner = pipeline("image-to-text", model="Salesforce/blip-image-captioning-base")
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     final_clip = concatenate_videoclips(clips)
 
     # Write the final clip to an MP4 file
-    final_clip.write_videofile("visualapp/static/preview.mp4", codec='libx264', audio_codec='aac')
+    final_clip.write_videofile("visualapp/static/preview.mp4", codec='libx264')
 
     # Close the clips
     final_clip.close()

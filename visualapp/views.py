@@ -11,14 +11,15 @@ import librosa
 import torch
 from transformers import WhisperProcessor, WhisperForConditionalGeneration 
 import os
+from django.http import HttpResponse
 from django.conf import settings
+from django.shortcuts import render
+from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import subprocess
 import json
-import cv2
-import sys
-from .youtube import extract_transcript_details, generate_summary
+from .youtube import extract_transcript_details,generate_summary
 
 def upload_video(request):
     if request.method == 'POST' and request.FILES.get('file'):
@@ -212,6 +213,10 @@ def generate_preview(request):
     else:
         return render(request, 'prev.html')
 
+
+
+
+
 from .utils import translate_text
 
 def translate(request):
@@ -220,8 +225,7 @@ def translate(request):
         target_lang = request.POST.get("target-language")
         translated_text = translate_text(input_text, target_lang)
         return HttpResponse(translated_text)
-
-
+        
 def youtube_transcripter(request):
     if request.method == 'POST':
         youtube_link = request.POST.get('youtube_link')
@@ -235,4 +239,4 @@ def youtube_transcripter(request):
             except Exception as e:
                 context = {'error': str(e)}
                 return render(request, 'visualapp/youtube_transcripter.html', context)
-    return render(request, 'visualapp/youtube_transcripter.html')
+    return render(request, 'visualapp/youtube_transcripter.html') 

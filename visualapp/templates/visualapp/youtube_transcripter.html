@@ -1,21 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Summary</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: 'Arial', sans-serif;
+            background-color: #f1dec9; /* Light brown background */
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background: #ac7c5a; /* Lighter brown for the container */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 80%; /* Adjusted width for better responsiveness */
+            max-width: 600px; /* Maximum width adjusted */
+            transition: transform 0.3s ease-in-out; /* Smooth transition for transform */
+            cursor: pointer; /* To indicate interactivity */
+        }
+
+        .container:hover {
+            transform: scale(1.05); /* Slight scale on hover */
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            margin-top: 20px;
+            width: 100%; /* Full width of the container */
+            border: 2px solid #865D36; /* Dark brown border */
+            border-radius: 4px;
+            box-sizing: border-box; /* Includes padding and border in the element's total width and height */
+            background-color: #c9b7aa; /* Greyish tan background for input */
+            color: #3E362E; /* Dark brown text color */
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #462404; /* Dark brown background */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            text-align: center;
+            text-decoration: none; /* Remove underline from links */
+            display: inline-block; /* Allow link to behave like a button */
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #3E362E; /* Darker brown on hover */
+        }
+
+        p {
+            margin-top: 20px;
+            color: #3E362E; /* Dark brown text color */
+        }
+
+        .error {
+            color: #ff0000;
+        }
+
+        h1 {
+            font-family: "DM Serif Display", serif;
+            font-size: 48px; /* Increased font size */
+            color: #5f4327;
+            margin-bottom: 5%; /* Adjusted bottom margin */
+        }
+    </style>
 </head>
 <body>
     <h1>YouTube Summary</h1>
-    <form method="post" action="{% url 'youtube_transcripter' %}">
-        {% csrf_token %}
-        <label for="youtube_link">YouTube Link:</label>
-        <input type="text" id="youtube_link" name="youtube_link">
-        <button type="submit">Get Summary</button>
-    </form>
-    {% if summary %}
-        <h2>Summary:</h2>
-        <p>{{ summary }}</p>
-    {% elif error %}
-        <p>{{ error }}</p>
-    {% endif %}
+    <div class="container">
+        <form method="post" action="{% url 'youtube_transcripter' %}">
+            {% csrf_token %}
+            <input type="text" id="youtube_link" name="youtube_link" placeholder="Enter YouTube link here...">
+            <button type="submit">Get Summary</button>
+        </form>
+        {% if summary %}
+            <p>{{ summary }}</p>
+        {% elif error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+    </div>
 </body>
 </html>

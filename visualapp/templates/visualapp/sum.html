@@ -4,38 +4,164 @@
 
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-    <title>Visual Scripter</title>
+    <title>Subtitle Generation</title>
 </head>
+<style>
+    body {
+        background-color: #f1dec9;
+    }
+
+    h1 {
+        font-family: "DM Serif Display", serif;
+        font-size: 48px;
+        /* Increased font size */
+        color: #5f4327;
+        text-align: center;
+    }
+
+    .con {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #ac7c5a;
+        margin: auto 2%;
+        padding: 3%;
+        border-radius: 8px;
+    }
+
+    #executeScriptForm {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 3%;
+    }
+
+    /* Style for the video player */
+    #videoPlayer {
+        width: 80%;
+        /* max-width: 800px; Adjust the maximum width as needed */
+        height: 90vh;
+        margin-left: 10%;
+        /* Center the video player horizontally with some margin */
+    }
+
+    #subtitlePreviewButton {
+        margin: 3% 45%;
+    }
+
+    /* Style for the buttons */
+    button {
+        padding: 10px 20px;
+        font-size: 18px;
+        background-color: #462404;
+        /* Dark brown background */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 10px;
+        /* Add margin between buttons */
+        transition: background-color 0.3s ease;
+    }
+
+
+    button:hover {
+        background-color: #a7713f;
+        /* Dark brown background */
+        /* Darker color on hover */
+    }
+
+    /* Responsive styles */
+    @media screen and (max-width: 600px) {
+
+        /* Adjust styles for smaller screens */
+        button {
+            width: 100%;
+            /* Make buttons full-width on smaller screens */
+        }
+    }
+
+    /* Additional styling for the transcript section */
+    #transcripts {
+        margin-top: 20px;
+        /* Add some space above the transcript section */
+    }
+
+    #transcripts p {
+        font-size: 16px;
+        /* Adjust font size for transcript text */
+    }
+
+    /* Optional: Style for the "Download SRT" button */
+    #download-srt {
+        margin-top: 20px;
+        /* Add some space above the button */
+    }
+
+
+    .card2 {
+        color: yellow;
+        position: absolute;
+        width: 600px;
+        height: 50px;
+        border: 1px solid #181818;
+        border-radius: 8px;
+        top: 88vh;
+        left: 28vw;
+        /* display: flex;
+        align-items: center;
+        justify-content: center; */
+        border-radius: 50px;
+        /* left: 450px;
+        top: 640px; */
+    }
+</style>
 
 <body>
+    <h1>Subtitle Generation</h1>
+    <div id="vid">
+        <video id="videoPlayer" controls>
+            <source src="{% url 'play-video' %}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
 
-<h1>Transcript Generation</h1>
+        <p2 class="card2" id="subtitleDisplay"></p2>
 
-<video id="videoPlayer" controls>
-    <source src="{% url 'play-video' %}" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-  
-  <a id="downloadLink" style="display: none;"></a>
-  
-  <form id="executeScriptForm" action="/execute_script/" method="post">
-      {% csrf_token %}
-      <button type="button" id="executeScriptButton">Transcribe!!</button>
-      <button id="srt">Download SRT</button>
-  </form>
 
-  <textarea id="outputTextField" rows="10" cols="50" readonly></textarea>
+        <a id="downloadLink" style="display: none;"></a>
 
-  <!-- Display transcripts -->
-  <div>
-      {% for transcript in transcripts %}
-      <p>{{ transcript }}</p>
-      {% endfor %}
-  </div>
+        <form id="executeScriptForm" action="/execute_script/" method="post">
+            {% csrf_token %}
+            <button type="button" id="executeScriptButton">Transcribe!!</button>
+            <button id="srt">Download SRT</button>
+        </form>
 
-<!-- Optional: Display the generated preview -->
-<!-- <video id="previewVideo" controls style="display: none;"></video>
+        <div class="con">
+            <textarea id="outputTextField" rows="10" cols="50" readonly></textarea>
+            <select name="target-language" id="target-language">
+                <option value="fr_XX">French (fr_XX)</option>
+                <option value="ja_XX">Japanese (ja_XX)</option>
+                <option value="it_IT">Italian (it_IT)</option>
+                <option value="ml_IN">Malayalam (ml_IN)</option>
+                <option value="hi_IN">Hindi (hi_IN)</option>
+            </select>
+            <button id="translateButton">Translate</button>
+            <textarea id="translatedTextField" rows="10" cols="50"></textarea>
+
+            <!-- Display transcripts -->
+            <div>
+                {% for transcript in transcripts %}
+                <p>{{ transcript }}</p>
+                {% endfor %}
+            </div>
+        </div>
+        <button id="subtitlePreviewButton">Subtitle Preview</button>
+
+        <div id="subtitleDisplay"></div>
+
+
+        <!-- Optional: Display the generated preview -->
+        <!-- <video id="previewVideo" controls style="display: none;"></video>
 
 <script>
     document.getElementById("generatePreviewButton").addEventListener("click", function () {
@@ -60,11 +186,12 @@
     });
 </script> -->
 
-<!-- <a href="{% url 'translate' %}"><button>Go to Translate Page</button></a> -->
+        <!-- <a href="{% url 'translate' %}"><button>Go to Translate Page</button></a> -->
 
-<!-- Include JavaScript files -->
+        <!-- Include JavaScript files -->
+        <script src="{% static 'script.js' %}"></script>
+        <script src="{% static 'srt.js' %}"></script>
 </body>
-<script src="{% static 'script.js' %}"></script>
-<script src="{% static 'srt.js' %}"></script>
+
 
 </html>
