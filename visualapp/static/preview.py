@@ -93,7 +93,7 @@ if __name__ == "__main__":
     final_clip = concatenate_videoclips(clips)
 
     # Write the final clip to an MP4 file
-    final_clip.write_videofile("visualapp/static/preview.mp4", codec='libx264', audio_codec='aac')
+    final_clip.write_videofile("visualapp/static/preview.mp4", codec='libx264', audio_codec='aac')#added audio_codec='aac' to make it comapatible in windows OS
 
     # Close the clips
     final_clip.close()  
