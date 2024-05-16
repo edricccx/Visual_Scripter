@@ -18,12 +18,7 @@ Ensure you have Python 3.x installed on your system. You can download it from [h
 git clone https://github.com/edricccx/Visual_Scripter
 ```
 
-2. Navigate to the project directory:
-```
-cd visual-scripter
-```
-
-3. Install the required dependencies:
+2. Install the required dependencies:
 ```
 pip3 install -r requirements.txt
 ```
