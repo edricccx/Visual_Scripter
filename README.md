@@ -35,6 +35,13 @@ python manage.py runserver
 
 Once the server is running, you can access Visual Scripter by opening your web browser and navigating to `http://localhost:8000`.
 
+This following models will be downloaded from hugging face
+1. Salesforce/blip-image-captioning-base
+2. sentence-transformers/paraphrase-multilingual-mpnet-base-v2
+3. facebook/mbart-large-50-many-to-many-mmt
+4. google/pegasus-large
+5. whisper-base.en
+
 ## Contributing
 
 We welcome contributions from the community. If you'd like to contribute to Visual Scripter, please follow these guidelines:
