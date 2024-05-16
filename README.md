@@ -8,7 +8,7 @@ These instructions will guide you through setting up the project on your local m
 
 ### Prerequisites
 
-Ensure you have Python 3.x installed on your system. You can download it from [here](https://www.python.org/downloads/).
+Ensure you have Python 3.12 installed on your system. You can download it from [here](https://www.python.org/downloads/).
 
 ### Installation
 
