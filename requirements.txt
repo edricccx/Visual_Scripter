@@ -1,0 +1,8 @@
+Django==5.0.6
+librosa==0.10.1
+moviepy==1.0.3
+numpy==1.26.4
+sentence_transformers==2.7.0
+torch==2.3.0
+transformers==4.40.0
+youtube_transcript_api==0.6.2
